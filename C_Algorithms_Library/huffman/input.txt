@@ -1,0 +1,6 @@
+Huffman coding is a compression algorithm used to reduce the size of files. 
+It assigns variable-length codes to characters based on their frequencies.
+More frequent characters get shorter codes, and less frequent characters get longer codes.
+This technique is widely used in various applications such as data transmission, file storage, and image compression.
+Using Huffman coding can significantly reduce the amount of data that needs to be stored or transmitted.
+
