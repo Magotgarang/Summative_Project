@@ -2,53 +2,91 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX 100
 #define TASK_LEN 100
 
-typedef struct {
-    char task[TASK_LEN];
+typedef struct Task {
+    int id; // Unique identifier for the task
+    char description[TASK_LEN];
     int completed;
-} Todo;
+    struct Task* next; // Pointer to the next task
+} Task;
 
 typedef struct {
-    Todo tasks[MAX];
-    int size;
+    Task* head; // Head pointer for the linked list
+    int size;   // Number of tasks in the list
 } TodoList;
 
+// Function to initialize the TodoList
 void initList(TodoList* list) {
+    list->head = NULL;
     list->size = 0;
 }
 
+// Function to create a new task
+Task* createTask(int id, const char* description) {
+    Task* newTask = (Task*)malloc(sizeof(Task));
+    if (newTask == NULL) {
+        printf("Memory allocation failed!\n");
+        exit(1);
+    }
+    newTask->id = id;
+    strncpy(newTask->description, description, TASK_LEN);
+    newTask->completed = 0;
+    newTask->next = NULL;
+    return newTask;
+}
+
+// Function to add a task to the list
 void addTask(TodoList* list) {
-    if (list->size < MAX) {
-        printf("Enter task: ");
-        getchar(); // Consume newline
-        fgets(list->tasks[list->size].task, TASK_LEN, stdin);
-        list->tasks[list->size].completed = 0;
-        list->size++;
-    } else {
-        printf("Todo list is full!\n");
-    }
+    char description[TASK_LEN];
+    printf("Enter task description: ");
+    getchar(); // Consume newline
+    fgets(description, TASK_LEN, stdin);
+    description[strcspn(description, "\n")] = 0; // Remove the newline character
+
+    Task* newTask = createTask(list->size + 1, description);
+    newTask->next = list->head; // Insert at the beginning
+    list->head = newTask;
+    list->size++;
+    printf("Task added successfully!\n");
 }
 
+// Function to complete a task by ID and remove it from the list
 void completeTask(TodoList* list) {
-    int index;
-    printf("Enter task number to complete (0 to %d): ", list->size - 1);
-    scanf("%d", &index);
-    if (index >= 0 && index < list->size) {
-        list->tasks[index].completed = 1;
-        printf("Task %d marked as completed.\n", index);
-    } else {
-        printf("Invalid task number.\n");
+    int id;
+    printf("Enter task ID to complete: ");
+    scanf("%d", &id);
+
+    Task** current = &list->head; // Use a pointer to pointer to remove the task
+    while (*current != NULL) {
+        if ((*current)->id == id) {
+            Task* temp = *current;
+            *current = (*current)->next; // Remove task from the list
+            free(temp); // Free the memory of the removed task
+            list->size--;
+            printf("Task %d marked as completed and removed from the list.\n", id);
+            return;
+        }
+        current = &(*current)->next;
     }
+    printf("Task with ID %d not found.\n", id);
 }
 
+// Function to display all tasks in the list
 void displayTasks(TodoList* list) {
-    for (int i = 0; i < list->size; i++) {
-        printf("%d. [%s] %s", i, list->tasks[i].completed ? "x" : " ", list->tasks[i].task);
+    if (list->size == 0) {
+        printf("No tasks available.\n");
+        return;
+    }
+    Task* current = list->head;
+    printf("Tasks:\n");
+    while (current != NULL) {
+        printf("%d. [%s] %s\n", current->id, current->completed ? "x" : " ", current->description);
+        current = current->next;
     }
 }
 
+// Main function to run the to-do list manager
 int main() {
     TodoList list;
     initList(&list);
@@ -69,6 +107,7 @@ int main() {
                 displayTasks(&list);
                 break;
             case 4:
+                printf("Exiting the program.\n");
                 break;
             default:
                 printf("Invalid choice.\n");
@@ -77,4 +116,3 @@ int main() {
 
     return 0;
 }
-
